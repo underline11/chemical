@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Compras</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- TELA 1: Cadastro de Itens -->
+  <section id="tela-cadastro">
+    <h1>Lista de Compras</h1>
+    
+    <!-- Formulário para adicionar itens -->
+    <input type="text" id="item-nome" placeholder="Nome do item">
+    <input type="number" id="item-quantidade" placeholder="Quantidade">
+    <input type="number" id="item-preco" placeholder="Preço Unitário">
+    <div id="mensagem-status" style="display:none; margin:10px 0;"></div>
+
+    <button id="adicionar-item">Adicionar Item</button>
+    <button id="resetar">Resetar Lista</button>
+
+    <!-- Exemplo de lista com itens carregados automaticamente -->
+    <h3>Exemplos de Itens</h3>
+   
+    <ul id="lista-exemplos">
+      <!-- Itens de exemplo serão carregados aqui -->
+    </ul>
+
+    <!-- Tabela de itens -->
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Quantidade</th>
+          <th>Preço Unitário</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="lista-itens"></tbody>
+    </table>
+
+    <!-- Total geral -->
+    <div class="total">
+      <strong>Total Geral: R$ <span id="total-geral">0.00</span></strong>
+    </div>
+
+    <!-- Botão para ir para a tela de itens -->
+    <button id="ver-itens">Ver Itens Adicionados</button>
+  </section>
+
+  <!-- TELA 2: Itens Adicionados -->
+  <section id="tela-itens" style="display: none;">
+    <h1>Itens Adicionados</h1>
+    <ul id="lista-itens-adicionados"></ul>
+    <button id="voltar">Voltar</button>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
