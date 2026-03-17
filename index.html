@@ -1,63 +1,244 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lista de Compras</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Lista de Compras Pro</title>
+  <style>
+    /* CSS - ESTILO E RESPONSIVIDADE */
+    :root {
+      --primary: #4a90e2;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --bg: #f4f7f6;
+      --text: #333;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h1 { text-align: center; color: var(--primary); margin-top: 0; }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    #adicionar-item { background-color: var(--success); color: white; }
+    #resetar { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); }
+    #ver-itens, #voltar { background-color: var(--primary); color: white; margin-top: 15px; width: 100%; }
+
+    /* TABELA RESPONSIVA */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    th { background-color: #f8f9fa; color: #666; font-size: 0.85rem; text-transform: uppercase; }
+
+    .total-container {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eef5ff;
+      border-radius: 6px;
+      text-align: right;
+      font-size: 1.2rem;
+      border-left: 5px solid var(--primary);
+    }
+
+    /* MEDIA QUERY PARA CELULAR (CARDS) */
+    @media (max-width: 600px) {
+      table thead { display: none; }
+      table, tbody, tr, td { display: block; width: 100%; }
+      tr {
+        margin-bottom: 15px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      }
+      td {
+        text-align: right;
+        padding: 8px 5px;
+        border-bottom: 1px solid #f9f9f9;
+        position: relative;
+      }
+      td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        color: var(--primary);
+        font-size: 0.75rem;
+      }
+    }
+
+    #mensagem-status {
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- TELA 1: Cadastro de Itens -->
-  <section id="tela-cadastro">
-    <h1>Lista de Compras</h1>
+  <div class="container">
+    <!-- TELA 1 -->
+    <section id="tela-cadastro">
+      <h1>Minha Lista</h1>
+      
+      <div id="mensagem-status"></div>
+
+      <input type="text" id="item-nome" placeholder="O que você vai comprar?">
+      <div style="display: flex; gap: 10px;">
+        <input type="number" id="item-quantidade" placeholder="Qtd">
+        <input type="number" id="item-preco" placeholder="Preço R$">
+      </div>
+
+      <div class="btn-group">
+        <button id="adicionar-item">Adicionar</button>
+        <button id="resetar">Limpar Tudo</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qtd</th>
+            <th>Preço</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="lista-itens"></tbody>
+      </table>
+
+      <div class="total-container">
+        <strong>Total: R$ <span id="total-geral">0.00</span></strong>
+      </div>
+
+      <button id="ver-itens">Resumo de Itens</button>
+    </section>
+
+    <!-- TELA 2 -->
+    <section id="tela-itens" style="display: none;">
+      <h1>Itens Adicionados</h1>
+      <ul id="lista-itens-adicionados" style="list-style: none; padding: 0;"></ul>
+      <button id="voltar">Voltar para Cadastro</button>
+    </section>
+  </div>
+
+  <script>
+    // JAVASCRIPT - LÓGICA DE FUNCIONAMENTO
+    const btnAdicionar = document.getElementById('adicionar-item');
+    const btnResetar = document.getElementById('resetar');
+    const btnVerItens = document.getElementById('ver-itens');
+    const btnVoltar = document.getElementById('voltar');
     
-    <!-- Formulário para adicionar itens -->
-    <input type="text" id="item-nome" placeholder="Nome do item">
-    <input type="number" id="item-quantidade" placeholder="Quantidade">
-    <input type="number" id="item-preco" placeholder="Preço Unitário">
-    <div id="mensagem-status" style="display:none; margin:10px 0;"></div>
+    const inputNome = document.getElementById('item-nome');
+    const inputQtd = document.getElementById('item-quantidade');
+    const inputPreco = document.getElementById('item-preco');
+    
+    const listaTabela = document.getElementById('lista-itens');
+    const totalGeralDisplay = document.getElementById('total-geral');
+    const listaResumo = document.getElementById('lista-itens-adicionados');
 
-    <button id="adicionar-item">Adicionar Item</button>
-    <button id="resetar">Resetar Lista</button>
+    let totalGeral = 0;
 
-    <!-- Exemplo de lista com itens carregados automaticamente -->
-    <h3>Exemplos de Itens</h3>
-   
-    <ul id="lista-exemplos">
-      <!-- Itens de exemplo serão carregados aqui -->
-    </ul>
+    btnAdicionar.addEventListener('click', () => {
+      const nome = inputNome.value;
+      const qtd = parseFloat(inputQtd.value);
+      const preco = parseFloat(inputPreco.value);
 
-    <!-- Tabela de itens -->
-    <table>
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Quantidade</th>
-          <th>Preço Unitário</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody id="lista-itens"></tbody>
-    </table>
+      if (nome && qtd > 0 && preco >= 0) {
+        const totalItem = qtd * preco;
+        totalGeral += totalItem;
 
-    <!-- Total geral -->
-    <div class="total">
-      <strong>Total Geral: R$ <span id="total-geral">0.00</span></strong>
-    </div>
+        // Adiciona na Tabela (Com data-label para o CSS responsivo)
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td data-label="Item">${nome}</td>
+          <td data-label="Qtd">${qtd}</td>
+          <td data-label="Preço">R$ ${preco.toFixed(2)}</td>
+          <td data-label="Total">R$ ${totalItem.toFixed(2)}</td>
+        `;
+        listaTabela.appendChild(tr);
 
-    <!-- Botão para ir para a tela de itens -->
-    <button id="ver-itens">Ver Itens Adicionados</button>
-  </section>
+        // Atualiza Total
+        totalGeralDisplay.textContent = totalGeral.toFixed(2);
 
-  <!-- TELA 2: Itens Adicionados -->
-  <section id="tela-itens" style="display: none;">
-    <h1>Itens Adicionados</h1>
-    <ul id="lista-itens-adicionados"></ul>
-    <button id="voltar">Voltar</button>
-  </section>
+        // Adiciona no Resumo (Tela 2)
+        const li = document.createElement('li');
+        li.style.padding = "10px";
+        li.style.borderBottom = "1px solid #eee";
+        li.textContent = `${qtd}x ${nome}`;
+        listaResumo.appendChild(li);
 
-  <script src="script.js"></script>
+        // Limpa campos
+        inputNome.value = ''; inputQtd.value = ''; inputPreco.value = '';
+        inputNome.focus();
+      } else {
+        alert("Preencha os campos corretamente!");
+      }
+    });
+
+    btnResetar.addEventListener('click', () => {
+      listaTabela.innerHTML = '';
+      listaResumo.innerHTML = '';
+      totalGeral = 0;
+      totalGeralDisplay.textContent = '0.00';
+    });
+
+    // Alternância de Telas
+    btnVerItens.addEventListener('click', () => {
+      document.getElementById('tela-cadastro').style.display = 'none';
+      document.getElementById('tela-itens').style.display = 'block';
+    });
+
+    btnVoltar.addEventListener('click', () => {
+      document.getElementById('tela-cadastro').style.display = 'block';
+      document.getElementById('tela-itens').style.display = 'none';
+    });
+  </script>
 </body>
 </html>
